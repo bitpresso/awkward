@@ -1,0 +1,70 @@
+#!/usr/bin/python
+
+import os, argparse
+import sys
+
+import common
+import tcmc
+
+__description__ = '''\
+Generate or update the state transition probaility matrix from text files or
+input sentences.
+'''
+
+def main():
+    # set the argument parser
+    parser = argparse.ArgumentParser(description=__description__)
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
+                        help='print the matrix')
+    parser.add_argument('-f', '--file', action='append',
+                        help='a text file to update the matrix')
+    parser.add_argument('sentence', nargs='*',
+                        help='sentences to update the matrix')
+    parser.add_argument('-o', '--output',
+                        help='an output file to save the matrix')
+
+    # parse arguments
+    args = parser.parse_args()
+
+    # print help message when script run without any arguments
+    if len(sys.argv) < 2:
+        parser.print_help()
+
+    # check required arguments
+    if args.file is None and len(args.sentence) == 0:
+        sys.stderr.write(
+            'ERROR: one of arguments (-f or sentence) is required at least!\n')
+        sys.exit(1)
+
+    # create new state transition data matrix
+    data = tcmc.Data()
+
+    # add state transition data from file if file option is used
+    if args.file:
+        data.add_files(args.file)
+
+    # add state transition data from arguments if sentences are inserted
+    if args.sentence is not []:
+        data.add_sentences(args.sentence)
+
+    # print state transition data matrix
+    if args.verbose is True:
+        data.view()
+
+    # create new state transition probability matrix using data of the state
+    # transition data matrix
+    prob = tcmc.Probability(data=data)
+
+    # print the state transition probability matrix
+    if args.verbose is True:
+        prob.view()
+
+    # save the state transition probability matrix to the output file
+    if args.output is not None:
+        prob.save(args.output)
+
+
+if __name__ == '__main__':
+    common.check_version(2, 7, 6)
+    common.check_module('pykov')
+    main()

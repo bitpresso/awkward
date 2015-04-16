@@ -1,0 +1,54 @@
+#!/usr/bin/python
+
+import os, argparse
+import sys
+
+import common
+import tcmc
+
+__description__ = '''\
+Check if the sentence is awkward.
+'''
+
+def main():
+    # set the argument parser
+    parser = argparse.ArgumentParser(description=__description__)
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
+                        help='print the matrix')
+    parser.add_argument('-f', '--file', required=True,
+                        help='a state transition probability matrix file')
+    parser.add_argument('sentence', nargs='*',
+                        help='sentences you want to check if it is awkward')
+
+    # parse arguments
+    args = parser.parse_args()
+
+    # print help message when script run without any arguments
+    if len(sys.argv) < 2:
+        parser.print_help()
+
+    # create new empty state transition probability matrix
+    prob = tcmc.Probability()
+
+    # load the state transition probability matrix
+    if args.file:
+        prob.load(args.file)
+
+    # print the state transition probability matrix
+    if args.verbose is True:
+        prob.view()
+
+    # if input sentences are existed, check if it is awkward
+    if args.sentence:
+        prob.check(args.sentence)
+    # if not, print error message and terminate
+    else:
+        sys.stderr.write('No sentences!\n')
+        prob.feeling_lucky()
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    common.check_version(2, 7, 6)
+    common.check_module('pykov')
+    main()
